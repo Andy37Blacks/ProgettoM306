@@ -1,0 +1,26 @@
+@startuml
+
+package "ProgettoChatLocale"{
+    class Utente{
+        -id: int
+        -username: String
+        -mail: String
+        -description: String
+        -image: String
+        +Utente()
+    }
+    class Messaggio{
+        -id: int
+        -tipo: String
+        -contenuto: String
+        -nomeUtente: String
+        +Messaggio()
+        +pickContenuto(): void 
+    }
+    class Chat{
+        -background: String
+        +Chat()
+    }
+}
+
+@enduml
