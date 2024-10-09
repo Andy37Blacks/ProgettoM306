@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    /* Reset default styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+div{
+    width: 80%;
+    height: 50%;
+    margin: auto;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input[type="text"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+button {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0069d9;
+}
+</style>
+<body>
+    
+    <div>
+        <div id="bodyContent">
+            <p></p>
+        </div>
+
+        <h2>Text</h2>
+        <textarea name="" id="text" cols="30" rows="10"></textarea>
+
+        <button id="submit">Invia Dati</button>
+    </div>
+
+        <script type="module">
+
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+            import { 
+                getDatabase, 
+                set, 
+                ref, 
+                push, 
+                child, 
+                onValue,
+                onChildAdded
+             } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js"
+    
+            const firebaseConfig = {
+            apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
+            authDomain: "prova-firebase-m306.firebaseapp.com",
+            databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "prova-firebase-m306",
+            storageBucket: "prova-firebase-m306.appspot.com",
+            messagingSenderId: "43569190876",
+            appId: "1:43569190876:web:43568120f0fd14e4c56119"
+            };
+    
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            var myName = prompt('Enter your name')
+    
+            submit.addEventListener('click',(e) =>{
+                var text = document.getElementById('text').value;
+                var name = myName;
+                const id = push(child(ref(database),'text')).key;
+    
+                set(ref(database,'text/' + id), {
+                    name: name, 
+                    text: text
+                });
+
+                document.getElementById('text').value = "";
+                //alert('testo spedito'); 
+            });
+
+            const newMes = ref(database, 'text/');
+            onChildAdded(newMes, (data)=> {
+                if(data.val().name != myName){
+                    var divData = '<div id="sendDiv">' +
+                        '<div>' + data.val().text + ' ' + '</div>' + 
+                        '</div>';
+
+                    var d1 = document.getElementById("bodyContent");
+                    d1.insertAdjacentHTML('beforebegin', divData);
+                }else{ 
+                    var divData = '<div id="sendDiv">' +
+                        '<div>' + data.val().text + ' ' + '</div>' + 
+                        '</div>';
+
+                    var d1 = document.getElementById("bodyContent");
+                    d1.insertAdjacentHTML('beforebegin', divData);
+                }
+            })
+          </script>
+</body>
+</html>
