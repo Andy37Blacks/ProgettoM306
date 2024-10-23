@@ -162,11 +162,13 @@ button:hover {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Negri V2</title>
+    <script src="./main.js" defer type="module"></script>
     <style>
         body {
             margin: 0;
@@ -179,13 +181,14 @@ button:hover {
         .container {
             width: 90%;
             max-width: 600px;
-            height: 90vh;
+            height: 85vh;
             margin: auto;
             display: flex;
             flex-direction: column;
             background: #fff;
-            border-radius: 10px;
+            border-radius: 10px 10px 0px 0px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
         }
 
         .messages {
@@ -194,7 +197,7 @@ button:hover {
             overflow-y: auto;
             border-bottom: 1px solid #ccc;
             display: flex;
-            flex-direction: column; 
+            flex-direction: column;
         }
 
         .message {
@@ -231,7 +234,7 @@ button:hover {
             margin-right: 10px;
         }
 
-        #submit{
+        #submit {
             padding: 10px;
             background-color: #8c00ff;
             color: #fff;
@@ -245,90 +248,78 @@ button:hover {
             background-color: #480083;
         }
 
-        #google-login-button{
-            height: 100px;
-            width: 100px;
+        /*https://codepen.io/mupkoo/pen/YgddgB*/
+        #google-login-button {
+            width: 50%;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            padding: 12px 16px 12px 42px;
+            border: none;
+            border-radius: 3px;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.25);
+            color: #757575;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+            background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=);
+            background-color: white;
+            background-repeat: no-repeat;
+            background-position: 12px 11px;
         }
 
+        #google-login-button:hover {
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        #google-login-button:active {
+            background-color: #eeeeee;
+        }
+
+        #google-login-button:focus {
+            outline: none;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.25), 0 0 0 3px #c8dafc;
+        }
+
+        #google-login-button:disabled {
+            filter: grayscale(100%);
+            background-color: #ebebeb;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.25);
+            cursor: not-allowed;
+        }
+
+        body {
+            text-align: center;
+            padding-top: 2rem;
+        }
+
+        #login_div {
+            background-color: #480083;
+            color: whitesmoke;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            height: 10vh;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0px 0px 10px 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="messages" id="messages"></div>
         <div class="input-area">
-            <textarea id="text" cols="30" rows="3" placeholder="Type your message..."></textarea>
+            <textarea id="text" cols="30" rows="1" placeholder="Type your message..."></textarea>
             <button id="submit">Send</button>
         </div>
-        <button id="google-login-button"></button>
     </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js"
-        import {
-            getDatabase,
-            set,
-            ref,
-            push,
-            child,
-            onChildAdded
-        } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
-            authDomain: "prova-firebase-m306.firebaseapp.com",
-            databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "prova-firebase-m306",
-            storageBucket: "prova-firebase-m306.appspot.com",
-            messagingSenderId: "43569190876",
-            appId: "1:43569190876:web:43568120f0fd14e4c56119"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const provider = new GoogleAuthProvider();
-
-        const auth = getAuth();
-        auth.languageCode = 'it';
-
-        const googleLogin = document.getElementById("google-login-button");
-        googleLogin.addEventListener("click", function(){
-            signInWithPopup(auth, provider)
-            .then((result) => {
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                const user = result.user;
-                console.log(user);
-                window.location.href = "logged.html"
-            }).catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-            });
-        });
-
-        const database = getDatabase(app);
-
-        const myName = prompt('Enter your name');
-
-        document.getElementById('submit').addEventListener('click', (e) => {
-            const text = document.getElementById('text').value;
-            const name = myName;
-            const id = push(child(ref(database), 'text')).key;
-
-            set(ref(database, 'text/' + id), {
-                name: name,
-                text: text
-            });
-
-            document.getElementById('text').value = "";
-        });
-
-        const newMes = ref(database, 'text/');
-        onChildAdded(newMes, (data) => {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message ' + (data.val().name === myName ? 'sent' : 'received');
-            messageElement.textContent = `${data.val().name}: ${data.val().text}`;
-            document.getElementById('messages').appendChild(messageElement);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; // Auto-scroll
-        });
-    </script>
+    <div class="login_div" id="login_div">
+        <p>Accedi prima di sbloccare le funzionalità della chat</p>
+        <button id="google-login-button">Accedi con Google</button>
+    </div>
 </body>
+
 </html>

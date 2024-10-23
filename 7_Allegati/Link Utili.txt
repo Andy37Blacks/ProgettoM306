@@ -5,8 +5,9 @@ Guida:
 https://www.html.it/articoli/firebase/
 
 Caricamento Immagini:
-https://www.youtube.com/watch?v=ll00ITa6r9s
+https://www.youtube.com/watch?v=EPlXPdNvQEY
 
 Google Authentication:
 https://www.youtube.com/watch?v=Uhbn1KmiNbg
 https://firebase.google.com/docs/auth/web/google-signin?hl=it
+

@@ -1,26 +1,19 @@
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="update.js" defer type="module"></script>
 </head>
+
 <body>
     <h1>Logged As </h1>
     <h2 id="userName"></h2>
     <h2 id="userEmail"></h2>
     <img id="userProfilePicture">
 </body>
-<script>
-    function updateUserProfile(){
-    const userName = user.displayName;
-    const userEmail = user.email;
-    const userProfilePicture = user.photoURL;
 
-    document.getElementById("userName").textContent = userName;
-    document.getElementById("userEmail").textContent = userEmail;
-    document.getElementById("userProfilePicture").src = userProfilePicture;
-}
-updateUserProfile();
-</script>
 </html>
