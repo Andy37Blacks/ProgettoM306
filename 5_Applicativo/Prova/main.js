@@ -33,7 +33,7 @@ googleLogin.addEventListener("click", function () {
         .then((result) => {
             const user = result.user;
             myName = user.displayName;
-            //profilePicture = user.profilePicture;
+            profilePicture = user.photoURL;
             alert("Accesso effettuato con " + user.email);
             document.getElementById("google-login-button").disabled = true;
             document.getElementById("login_div").style.visibility = 'hidden';
@@ -53,11 +53,10 @@ document.getElementById('submit').addEventListener('click', (e) => {
     const text = document.getElementById('text').value;
     const id = push(ref(database, 'text')).key;
 
-    testo = text;
     set(ref(database, 'text/' + id), {
         name: myName,
         text: text,
-        //profilePicture: profilePicture
+        profilePicture: profilePicture
     }).then(() => {
         document.getElementById('text').value = ""; 
     }).catch((error) => {
@@ -67,10 +66,11 @@ document.getElementById('submit').addEventListener('click', (e) => {
 
 document.getElementById('text').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene il comportamento dell' andare a capo tipico delle textarea
-        const text = document.getElementById('text').value.trim(); // Serve a rimuovere gli spazi prima e dopo il text.
+        e.preventDefault(); 
+        const text = document.getElementById('text').value.trim(); 
         if (text) {
             document.getElementById('submit').click();
+            document.getElementById('text').value = ""; 
         }
     }
 });
@@ -81,14 +81,33 @@ function loadMessages() {
     const messagesRef = ref(database, 'text/');
     onChildAdded(messagesRef, (data) => {
         const messageData = data.val();
-        console.log(data.profilePicture);
         if (myName) {
             const messageElement = document.createElement('div');
             messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
-            messageElement.innerHTML = `${messageData.name}: ${messageData.text}`;
-            //messageElement.innerHTML = `<img src="${messageData.profilePicture}"></img>${messageData.name}: ${messageData.text}`;
+            //messageElement.innerHTML = `${messageData.name}: ${messageData.text}`;
+            messageElement.innerHTML = `<img id= "pic" src="${messageData.profilePicture}"></img>${messageData.name}: ${messageData.text}`;
             document.getElementById('messages').appendChild(messageElement);
             document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; // Auto-scroll
         }
     });
 }
+
+/* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL */
+async function parseURI(d){
+    var reader = new FileReader();
+    reader.readAsDataURL(d);          
+    return new Promise((res,rej)=> {
+      reader.onload = (e) => {
+        res(e.target.result)
+      }
+    })
+  } 
+  
+  async function getDataBlob(url){
+    var res = await fetch(url);
+    var blob = await res.blob();
+    var uri = await parseURI(blob);
+    return uri;
+  }
+  
+  
