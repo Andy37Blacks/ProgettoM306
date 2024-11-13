@@ -170,6 +170,7 @@ button:hover {
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Chat Negri V3</title>
     <script src="./main.js" defer type="module"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <style>
         body {
             margin: 0;
@@ -177,6 +178,7 @@ button:hover {
             font-family: Arial, sans-serif;
             /*background-color: #f0f0f0;*/
             background-color: #8c00ff;
+
         }
 
         .container {
@@ -201,15 +203,6 @@ button:hover {
             flex-direction: column;
         }
 
-        .message {
-            margin-bottom: 15px;
-            padding: 5px;
-            border-radius: 5px;
-            max-width: 70%;
-            word-wrap: break-word;
-            box-shadow: 4px 4px 2px rgb(180, 180, 180);
-        }
-
         .message.sent {
             background-color: #8c00ff;
             color: #fff;
@@ -226,6 +219,86 @@ button:hover {
             display: flex;
             padding: 10px;
         }
+
+        /* Base styling for messages */
+        .message {
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+
+        .message .message-content {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 10px;
+            max-width: 100%;
+            word-wrap: break-word;
+            /* Questo permette al testo di andare a capo automaticamente */
+            word-break: break-word;
+            /* Aggiunto per forzare la rottura delle parole lunghe */
+        }
+
+        .message img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .message .username {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .message .text {
+            margin-left: 5px;
+            font-size: 0.95em;
+            max-width: 70%;
+            /* Limita la larghezza del testo */
+            word-wrap: break-word;
+            /* Permette il wrapping delle parole lunghe */
+        }
+
+        /* Styling for timestamps */
+        .timestamp {
+            font-size: 0.7em;
+            color: gray;
+            margin-top: 3px;
+        }
+
+        .timestamp.left {
+            text-align: left;
+            margin-left: 10px;
+        }
+
+        .timestamp.right {
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        /* Sent and received messages */
+        .sent {
+            align-self: flex-end;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .received {
+            align-self: flex-start;
+            background-color: #e1f7d5;
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .message-image {
+            max-width: 100%;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+
 
         textarea {
             flex-grow: 1;
@@ -245,7 +318,8 @@ button:hover {
             vertical-align: middle;
             border: 1px solid rgb(0, 0, 0);
         }
-        #message_test{
+
+        #message_test {
             font-family: 'Helvetica', 'Arial', sans-serif;
             display: inline-block;
             vertical-align: middle;
@@ -329,9 +403,11 @@ button:hover {
     <div class="container">
         <div class="messages" id="messages"></div>
         <div class="input-area">
+            <input type="file" id="imageUpload" accept="image/*" />
             <textarea id="text" cols="30" rows="1" placeholder="Type your message..."></textarea>
             <button id="submit">Send</button>
         </div>
+
     </div>
     <div class="login_div" id="login_div">
         <p>Accedi prima di sbloccare le funzionalità della chat</p>

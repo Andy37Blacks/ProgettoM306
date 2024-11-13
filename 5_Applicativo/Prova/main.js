@@ -1,15 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import {
-    getDatabase,
-    set,
-    ref,
-    push,
-    onChildAdded
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import { getDatabase, set, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
+// Configurazione Firebase
 const firebaseConfig = {
-    apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
+    apiKey: "API_KEY",
     authDomain: "prova-firebase-m306.firebaseapp.com",
     databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "prova-firebase-m306",
@@ -20,13 +15,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-auth.languageCode = 'it';
 const provider = new GoogleAuthProvider();
 const database = getDatabase(app);
 
-const googleLogin = document.getElementById("google-login-button");
 let myName = "";
 let profilePicture = "";
+
+const googleLogin = document.getElementById("google-login-button");
 
 googleLogin.addEventListener("click", function () {
     signInWithPopup(auth, provider)
@@ -34,6 +29,7 @@ googleLogin.addEventListener("click", function () {
             const user = result.user;
             myName = user.displayName;
             profilePicture = user.photoURL;
+
             alert("Accesso effettuato con " + user.email);
             document.getElementById("google-login-button").disabled = true;
             document.getElementById("login_div").style.visibility = 'hidden';
@@ -44,6 +40,20 @@ googleLogin.addEventListener("click", function () {
         });
 });
 
+// Caricamento immagine
+let imageData = "";
+document.getElementById("image-upload").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imageData = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Invio messaggio
 document.getElementById('submit').addEventListener('click', (e) => {
     if (!myName) {
         alert("Devi essere loggato per accedere alla chat.");
@@ -51,48 +61,52 @@ document.getElementById('submit').addEventListener('click', (e) => {
     }
 
     const text = document.getElementById('text').value;
+    const date = new Date();
+    const timeStamp = `${date.getHours()}:${date.getMinutes()}`;
     const id = push(ref(database, 'text')).key;
 
     set(ref(database, 'text/' + id), {
         name: myName,
         text: text,
-        profilePicture: profilePicture
+        profilePicture: profilePicture,
+        image: imageData || "", // Invia l'immagine solo se presente
+        time: timeStamp
     }).then(() => {
-        document.getElementById('text').value = ""; 
+        document.getElementById('text').value = "";
+        document.getElementById('image-upload').value = "";
+        imageData = ""; // Reset dell'immagine dopo l'invio
     }).catch((error) => {
         console.error("Errore nella scrittura nel database:", error);
     });
 });
 
-document.getElementById('text').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault(); 
-        const text = document.getElementById('text').value.trim(); 
-        if (text) {
-            document.getElementById('submit').click();
-            document.getElementById('text').value = ""; 
-        }
-    }
-});
-
-
-
+// Caricamento messaggi
 function loadMessages() {
     const messagesRef = ref(database, 'text/');
     onChildAdded(messagesRef, (data) => {
         const messageData = data.val();
-        if (myName) {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
-            //messageElement.innerHTML = `${messageData.name}: ${messageData.text}`;
-            messageElement.innerHTML = `<img id= "pic" src="${messageData.profilePicture}"></img>${messageData.name}: ${messageData.text}`;
-            document.getElementById('messages').appendChild(messageElement);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; // Auto-scroll
-        }
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
+        const timeClass = messageData.name === myName ? 'right' : 'left';
+
+        // Mostra testo e immagine (se presente)
+        messageElement.innerHTML = `
+            <div class="message-content">
+                <img id="pic" src="${messageData.profilePicture}">
+                <span class="username">${messageData.name}</span>: 
+                <span class="text">${messageData.text}</span>
+                ${messageData.image ? `<img class="message-image" src="${messageData.image}"/>` : ""}
+            </div>
+            <p class="timestamp ${timeClass}">${messageData.time}</p>
+        `;
+
+        document.getElementById('messages').appendChild(messageElement);
+        document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
     });
 }
 
-/* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL */
+
+/* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
 async function parseURI(d){
     var reader = new FileReader();
     reader.readAsDataURL(d);          
@@ -103,11 +117,10 @@ async function parseURI(d){
     })
   } 
   
-  async function getDataBlob(url){
+async function getDataBlob(url){
     var res = await fetch(url);
     var blob = await res.blob();
     var uri = await parseURI(blob);
     return uri;
-  }
-  
-  
+}
+*/
