@@ -1,10 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import { getDatabase, set, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import {
+    getDatabase,
+    set,
+    ref,
+    push,
+    onChildAdded
+} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-// Configurazione Firebase
 const firebaseConfig = {
-    apiKey: "API_KEY",
+    apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
     authDomain: "prova-firebase-m306.firebaseapp.com",
     databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "prova-firebase-m306",
@@ -15,13 +20,29 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+auth.languageCode = 'it';
 const provider = new GoogleAuthProvider();
 const database = getDatabase(app);
 
+const googleLogin = document.getElementById("google-login-button");
 let myName = "";
 let profilePicture = "";
 
-const googleLogin = document.getElementById("google-login-button");
+const mesi = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+];
+
 
 googleLogin.addEventListener("click", function () {
     signInWithPopup(auth, provider)
@@ -40,20 +61,7 @@ googleLogin.addEventListener("click", function () {
         });
 });
 
-// Caricamento immagine
 let imageData = "";
-document.getElementById("image-upload").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imageData = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Invio messaggio
 document.getElementById('submit').addEventListener('click', (e) => {
     if (!myName) {
         alert("Devi essere loggato per accedere alla chat.");
@@ -62,10 +70,14 @@ document.getElementById('submit').addEventListener('click', (e) => {
 
     const text = document.getElementById('text').value;
     const date = new Date();
-    const timeStamp = `${date.getHours()}:${date.getMinutes()}`;
-    const id = push(ref(database, 'text')).key;
+    const monthName = mesi[date.getMonth()];
+    const day = date.getDay();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const timeStamp = `${monthName} ${day} - ${hours}:${minutes}`;
+    const id = push(ref(database, 'message')).key;
 
-    set(ref(database, 'text/' + id), {
+    set(ref(database, 'message/' + id), {
         name: myName,
         text: text,
         profilePicture: profilePicture,
@@ -80,25 +92,48 @@ document.getElementById('submit').addEventListener('click', (e) => {
     });
 });
 
-// Caricamento messaggi
+
+document.getElementById('text').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Previene il comportamento dell' andare a capo tipico delle textarea
+        const text = document.getElementById('text').value.trim(); // Serve a rimuovere gli spazi prima e dopo il text.
+        if (text) {
+            document.getElementById('submit').click();
+            document.getElementById('text').value = "";
+        }
+    }
+});
+
+document.getElementById("image-upload").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imageData = e.target.result; // Salva l'immagine come Base64
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
 function loadMessages() {
-    const messagesRef = ref(database, 'text/');
+    const messagesRef = ref(database, 'message/');
     onChildAdded(messagesRef, (data) => {
         const messageData = data.val();
         const messageElement = document.createElement('div');
         messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
         const timeClass = messageData.name === myName ? 'right' : 'left';
 
-        // Mostra testo e immagine (se presente)
+        //https://stackoverflow.com/questions/980855/inputting-a-default-image-in-case-the-src-attribute-of-an-html-img-is-not-vali
         messageElement.innerHTML = `
             <div class="message-content">
                 <img id="pic" src="${messageData.profilePicture}">
                 <span class="username">${messageData.name}</span>: 
+                ${messageData.image ? `<img id="message-image" class="message-image" src="${messageData.image}"/>` : ""}
                 <span class="text">${messageData.text}</span>
-                ${messageData.image ? `<img class="message-image" src="${messageData.image}"/>` : ""}
             </div>
             <p class="timestamp ${timeClass}">${messageData.time}</p>
         `;
+
 
         document.getElementById('messages').appendChild(messageElement);
         document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
@@ -122,5 +157,4 @@ async function getDataBlob(url){
     var blob = await res.blob();
     var uri = await parseURI(blob);
     return uri;
-}
-*/
+}*/
