@@ -1,0 +1,61 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js"></script>
+    <link href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    
+
+<!--begin::Form-->
+<form class="form" action="#" method="post">
+    <!--begin::Input group-->
+    <div class="fv-row">
+        <!--begin::Dropzone-->
+        <div class="dropzone" id="kt_dropzonejs_example_1">
+            <!--begin::Message-->
+            <div class="dz-message needsclick">
+                <i class="ki-duotone ki-file-up fs-3x text-primary"><span class="path1"></span><span class="path2"></span></i>
+
+                <!--begin::Info-->
+                <div class="ms-4">
+                    <h3 class="fs-5 fw-bold text-gray-900 mb-1">Drop files here or click to upload.</h3>
+                    <span class="fs-7 fw-semibold text-gray-500">Upload up to 10 files</span>
+                </div>
+                <!--end::Info-->
+            </div>
+        </div>
+        <!--end::Dropzone-->
+    </div>
+    <!--end::Input group-->
+</form>
+<!--end::Form-->
+
+
+</body>
+<script>
+    
+
+var myDropzone = new Dropzone("#kt_dropzonejs_example_1", {
+    url: "https://keenthemes.com/scripts/void.php", // Set the url for your upload script location
+    paramName: "file", // The name that will be used to transfer the file
+    maxFiles: 10,
+    addRemoveLinks: true,
+    accept: function(file, done) {
+        if (file.name == "wow.jpg") {
+            done("Naha, you don't.");
+        } else {
+            done();
+        }
+    }
+});
+
+
+</script>
+
+</html>

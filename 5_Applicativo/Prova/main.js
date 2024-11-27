@@ -62,6 +62,7 @@ googleLogin.addEventListener("click", function () {
 });
 
 let imageData = "";
+let audioData = "";
 document.getElementById('submit').addEventListener('click', (e) => {
     if (!myName) {
         alert("Devi essere loggato per accedere alla chat.");
@@ -82,11 +83,13 @@ document.getElementById('submit').addEventListener('click', (e) => {
         text: text,
         profilePicture: profilePicture,
         image: imageData || "", // Invia l'immagine solo se presente
+        audio: audioData || "",
         time: timeStamp
     }).then(() => {
         document.getElementById('text').value = "";
-        document.getElementById('image-upload').value = "";
+        document.getElementById('upload').value = "";
         imageData = ""; // Reset dell'immagine dopo l'invio
+        audioData = "";
     }).catch((error) => {
         console.error("Errore nella scrittura nel database:", error);
     });
@@ -95,7 +98,7 @@ document.getElementById('submit').addEventListener('click', (e) => {
 
 document.getElementById('text').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene il comportamento dell' andare a capo tipico delle textarea
+        e.preventDefault(); // Previene il comportamento dell' andare a capo
         const text = document.getElementById('text').value.trim(); // Serve a rimuovere gli spazi prima e dopo il text.
         if (text) {
             document.getElementById('submit').click();
@@ -115,6 +118,17 @@ document.getElementById("image-upload").addEventListener("change", (event) => {
     }
 });
 
+document.getElementById("audio-upload").addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            audioData = e.target.result; // Salva l'audio come Base64
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
 function loadMessages() {
     const messagesRef = ref(database, 'message/');
     onChildAdded(messagesRef, (data) => {
@@ -127,10 +141,13 @@ function loadMessages() {
         messageElement.innerHTML = `
             <div class="message-content">
                 <img id="pic" src="${messageData.profilePicture}">
-                <span class="username">${messageData.name}</span>: 
-                ${messageData.image ? `<img id="message-image" class="message-image" src="${messageData.image}"/>` : ""}
-                <span class="text">${messageData.text}</span>
+                <span id="username" class="username">${messageData.name}:</span>
+                ${messageData.image ? ` <img id="message-image" class="message-image" src="${messageData.image}"/>` : ""}
+                ${messageData.audio ? ` <audio controls>
+                                            <source src="${messageData.audio}" type="audio/mp3">
+                                        </audio>` : ""}
             </div>
+            <div class="text">${messageData.text}</div>
             <p class="timestamp ${timeClass}">${messageData.time}</p>
         `;
 
@@ -139,7 +156,6 @@ function loadMessages() {
         document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
     });
 }
-
 
 /* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
 async function parseURI(d){
