@@ -7,7 +7,6 @@ import {
     push,
     onChildAdded
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
-
 const firebaseConfig = {
     apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
     authDomain: "prova-firebase-m306.firebaseapp.com",
@@ -61,9 +60,8 @@ googleLogin.addEventListener("click", function () {
         });
 });
 
-let imageData = "";
-let audioData = "";
-document.getElementById('submit').addEventListener('click', (e) => {
+let fileData = "";
+document.getElementById('submit').addEventListener('click', () => {
     if (!myName) {
         alert("Devi essere loggato per accedere alla chat.");
         return;
@@ -82,18 +80,18 @@ document.getElementById('submit').addEventListener('click', (e) => {
         name: myName,
         text: text,
         profilePicture: profilePicture,
-        image: imageData || "", // Invia l'immagine solo se presente
-        audio: audioData || "",
+        file: fileData || "", 
         time: timeStamp
     }).then(() => {
         document.getElementById('text').value = "";
-        document.getElementById('upload').value = "";
-        imageData = ""; // Reset dell'immagine dopo l'invio
-        audioData = "";
+        fileData = ""; 
+        dropzone.removeAllFiles(); // Ripulisce la Dropzone --> Preso da ChatGPT
     }).catch((error) => {
         console.error("Errore nella scrittura nel database:", error);
     });
 });
+
+
 
 
 document.getElementById('text').addEventListener('keydown', (e) => {
@@ -107,28 +105,6 @@ document.getElementById('text').addEventListener('keydown', (e) => {
     }
 });
 
-document.getElementById("image-upload").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imageData = e.target.result; // Salva l'immagine come Base64
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById("audio-upload").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            audioData = e.target.result; // Salva l'audio come Base64
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
 function loadMessages() {
     const messagesRef = ref(database, 'message/');
     onChildAdded(messagesRef, (data) => {
@@ -137,25 +113,54 @@ function loadMessages() {
         messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
         const timeClass = messageData.name === myName ? 'right' : 'left';
 
-        //https://stackoverflow.com/questions/980855/inputting-a-default-image-in-case-the-src-attribute-of-an-html-img-is-not-vali
         messageElement.innerHTML = `
             <div class="message-content">
                 <img id="pic" src="${messageData.profilePicture}">
                 <span id="username" class="username">${messageData.name}:</span>
-                ${messageData.image ? ` <img id="message-image" class="message-image" src="${messageData.image}"/>` : ""}
-                ${messageData.audio ? ` <audio controls>
-                                            <source src="${messageData.audio}" type="audio/mp3">
-                                        </audio>` : ""}
+                ${messageData.file.startsWith('data:image/') ? `<img id="message-image" class="message-image" src="${messageData.file}" alt="Uploaded Image"/>` : ""}
+                ${messageData.file.startsWith('data:audio/') ? `<audio id="message-audio" controls>
+                    <source src="${messageData.file}" type="audio/mpeg">
+                </audio>` : ""}
             </div>
             <div class="text">${messageData.text}</div>
             <p class="timestamp ${timeClass}">${messageData.time}</p>
         `;
 
-
         document.getElementById('messages').appendChild(messageElement);
         document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
     });
 }
+
+Dropzone.autoDiscover = false;
+const arrayFiles = [];
+const dropzone = new Dropzone("#fileDropzone", {
+    addRemoveLinks: true,
+    dictRemoveFile: "Remove file",
+    maxFiles: 1,
+    acceptedFiles: "image/*,audio/*", //Chiesto a ChatGPT per i file accettati
+    init: function () {
+        this.on("addedfile", (file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if(file.status == 'uploading'){
+                    fileData = e.target.result; // Salva il contenuto Base64
+                    console.log("File caricato (Base64):", fileData);
+                }else{
+                    alert("Puoi inserire solo un file alla volta!!!");
+                    dropzone.removeAllFiles();
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        this.on("removedfile", (file) => {
+            if(file.status == 'error'){
+                fileData = ""; // Rimuove il file corrente
+            }
+        });
+    },
+});
+
 
 /* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
 async function parseURI(d){

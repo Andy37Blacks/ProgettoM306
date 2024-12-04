@@ -6,32 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="login.css">
     <title>Chat Negri V3</title>
-    <script src="./main.js" defer type="module"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="./login.js" defer type="module"></script>
+    <!--<script src="https://apis.google.com/js/platform.js" async defer></script>-->
 </head>
 
 <body>
-    <div class="container">
-        <div class="messages" id="messages"></div>
-        <div class="input-area">
-            <input type="file" id="image-upload"/>
-            <label for="image-upload">Upload Image</label>
-
-            <input type="file" id="audio-upload"/>
-            <label for="audio-upload">Upload Audio</label>
-
-
-            <textarea id="text" cols="30" rows="1"></textarea>
-            <button id="submit">Send</button>
-        </div>
-
-    </div>
+  <div class="content">
     <div class="login_div" id="login_div">
-        <p>Accedi prima di sbloccare le funzionalità della chat</p>
-        <button id="google-login-button">Accedi con Google</button>
+      <p>Esegui il login per accedere ai contenuti della chat</p>
+      <button id="google-login-button">Accedi con Google</button>
     </div>
+  </div>
 </body>
-
 </html>
