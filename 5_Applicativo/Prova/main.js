@@ -23,9 +23,8 @@ auth.languageCode = 'it';
 const provider = new GoogleAuthProvider();
 const database = getDatabase(app);
 
-const googleLogin = document.getElementById("google-login-button");
-let myName = "";
-let profilePicture = "";
+let myName = sessionStorage.getItem("myName"); //https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
+let profilePicture = sessionStorage.getItem("profilePicture"); //https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
 
 const mesi = [
     "Jan",
@@ -43,67 +42,122 @@ const mesi = [
 ];
 
 
-googleLogin.addEventListener("click", function () {
-    signInWithPopup(auth, provider)
-        .then((result) => {
-            const user = result.user;
-            myName = user.displayName;
-            profilePicture = user.photoURL;
-
-            alert("Accesso effettuato con " + user.email);
-            document.getElementById("google-login-button").disabled = true;
-            document.getElementById("login_div").style.visibility = 'hidden';
-            loadMessages();
-        })
-        .catch((error) => {
-            console.error("Sign-in error:", error.code, error.message);
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    // Controlla se l'utente è autenticato
+    if (!myName) {
+        alert("Devi effettuare il login per accedere alla chat.");
+        window.location.replace("/"); 
+    } else {
+        checkOldMessages(); 
+        setInterval(checkOldMessages, 60 * 60 * 1000); 
+        loadMessages();
+    }
 });
+
+var text = "";
+
+
+document.getElementById('text').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        text = document.getElementById('text').value.trim();
+        if (text) {
+            document.getElementById('submit').click();
+            document.getElementById('text').value = ""; 
+        }
+    } else if (e.key === 'Enter' && e.shiftKey) {
+        
+    }
+});
+
+
 
 let fileData = "";
 document.getElementById('submit').addEventListener('click', () => {
     if (!myName) {
         alert("Devi essere loggato per accedere alla chat.");
+        window.location.replace("/"); //https://www.w3schools.com/js/js_window_location.asp
         return;
     }
+    else {
+        text = document.getElementById('text').value.trim();
 
-    const text = document.getElementById('text').value;
-    const date = new Date();
-    const monthName = mesi[date.getMonth()];
-    const day = date.getDay();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const timeStamp = `${monthName} ${day} - ${hours}:${minutes}`;
-    const id = push(ref(database, 'message')).key;
+        /* Preso da chatgpt per far si che quando si va a capo anche nel div dove viene inserito il testo bisogna cambirare 
+        il \n con un <br> così da poter lasciare la formattazione come inserita dall' utente nel textarea.*/
 
-    set(ref(database, 'message/' + id), {
-        name: myName,
-        text: text,
-        profilePicture: profilePicture,
-        file: fileData || "", 
-        time: timeStamp
-    }).then(() => {
-        document.getElementById('text').value = "";
-        fileData = ""; 
-        dropzone.removeAllFiles(); // Ripulisce la Dropzone --> Preso da ChatGPT
-    }).catch((error) => {
-        console.error("Errore nella scrittura nel database:", error);
-    });
-});
+        text = text.replace(/\n/g, "<br>");
 
+        console.log(text);
+        const date = new Date();
+        let monthName = mesi[date.getMonth()];
+        let day = date.getDate();
 
-
-
-document.getElementById('text').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault(); // Previene il comportamento dell' andare a capo
-        const text = document.getElementById('text').value.trim(); // Serve a rimuovere gli spazi prima e dopo il text.
-        if (text) {
-            document.getElementById('submit').click();
-            document.getElementById('text').value = "";
+        let hours = "";
+        if (date.getHours() < 10) {
+            hours = "0" + date.getHours();
         }
+        else {
+            hours = date.getHours();
+        }
+
+        let minutes = "";
+        if (date.getMinutes() < 10) {
+            minutes = "0" + date.getMinutes();
+        }
+        else {
+            minutes = date.getMinutes();
+        }
+
+        const timeStamp = `${monthName} ${day} - ${hours}:${minutes}`;
+        const id = push(ref(database, 'message')).key;
+
+        const timeStampUnix = Date.now(); // Aggiunge il timestamp UNIX in millisecondi
+
+        if (text) {
+            set(ref(database, 'message/' + id), {
+                name: myName,
+                text: text,
+                profilePicture: profilePicture,
+                file: fileData || "",
+                time: timeStamp,
+                timeUnix: timeStampUnix // Salva il timestamp UNIX
+            }).then(() => {
+                document.getElementById('text').value = "";
+                fileData = "";
+                dropzone.removeAllFiles();
+            }).catch((error) => {
+                console.error("Errore nella scrittura nel database:", error);
+            });
+        }
+
     }
 });
+
+
+
+function checkOldMessages() {
+    const messagesRef = ref(database, 'message/');
+    const oneWeekAgo = Date.now() -  7  * 24 * 60 * 60 * 1000; // 7 giorni in millisecondi
+
+    onChildAdded(messagesRef, (data) => {
+        const messageData = data.val();
+        const messageKey = data.key;
+
+        if (messageData.timeUnix < oneWeekAgo) {
+            // Elimina il messaggio dal database
+            set(ref(database, 'message/' + messageKey), null)
+                .then(() => {
+                    console.log(`Messaggio con ID ${messageKey} eliminato`);
+                    window.location.replace("/chat.html");
+                    
+                })
+                .catch((error) => {
+                    console.error(`Errore nell'eliminazione del messaggio con ID ${messageKey}:`, error);
+                });
+        }
+    });
+}
+
 
 function loadMessages() {
     const messagesRef = ref(database, 'message/');
@@ -131,8 +185,9 @@ function loadMessages() {
     });
 }
 
+
+//https://docs.dropzone.dev/
 Dropzone.autoDiscover = false;
-const arrayFiles = [];
 const dropzone = new Dropzone("#fileDropzone", {
     addRemoveLinks: true,
     dictRemoveFile: "Remove file",
@@ -142,10 +197,10 @@ const dropzone = new Dropzone("#fileDropzone", {
         this.on("addedfile", (file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
-                if(file.status == 'uploading'){
+                if (file.status == 'uploading') {
                     fileData = e.target.result; // Salva il contenuto Base64
                     console.log("File caricato (Base64):", fileData);
-                }else{
+                } else {
                     alert("Puoi inserire solo un file alla volta!!!");
                     dropzone.removeAllFiles();
                 }
@@ -154,28 +209,24 @@ const dropzone = new Dropzone("#fileDropzone", {
         });
 
         this.on("removedfile", (file) => {
-            if(file.status == 'error'){
+            if (file.status == 'error') {
                 fileData = ""; // Rimuove il file corrente
             }
         });
     },
 });
 
+console.log(myName);
+console.log(profilePicture);
 
-/* https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
-async function parseURI(d){
-    var reader = new FileReader();
-    reader.readAsDataURL(d);          
-    return new Promise((res,rej)=> {
-      reader.onload = (e) => {
-        res(e.target.result)
-      }
-    })
-  } 
-  
-async function getDataBlob(url){
-    var res = await fetch(url);
-    var blob = await res.blob();
-    var uri = await parseURI(blob);
-    return uri;
-}*/
+function logout() {
+    sessionStorage.removeItem("myName");
+    sessionStorage.removeItem("profilePicture");
+    myName = null;
+    profilePicture = null;
+    console.log(myName);
+    console.log(profilePicture);
+    window.location.replace("/");
+}
+
+document.getElementById("logout-button").addEventListener("click", logout);

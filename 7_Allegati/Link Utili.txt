@@ -14,3 +14,5 @@ Google Authentication:
 https://www.youtube.com/watch?v=Uhbn1KmiNbg
 https://firebase.google.com/docs/auth/web/google-signin?hl=it
 
+Delete Data Firebase after a week:
+https://www.youtube.com/watch?v=7hB2ASYBkXo
