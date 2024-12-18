@@ -16,3 +16,6 @@ https://firebase.google.com/docs/auth/web/google-signin?hl=it
 
 Delete Data Firebase after a week:
 https://www.youtube.com/watch?v=7hB2ASYBkXo
+
+Bottoni:
+https://webdeasy.de/en/css-buttons-en/?utm_content=cmp-true

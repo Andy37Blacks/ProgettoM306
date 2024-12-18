@@ -93,3 +93,25 @@ button:focus {
         font-size: 0.9rem;
     }
 }
+
+footer {
+    background-color: #480083; /* Colore di sfondo coerente con il design */
+    color: #fff; /* Testo bianco per contrasto */
+    text-align: center; /* Allinea il testo al centro */
+    padding: 10px; /* Aggiunge un po' di spazio attorno al testo */
+    font-size: 0.9em; /* Leggermente più piccolo per i crediti */
+    border-top: 1px solid #8c00ff; /* Linea separatrice per evidenziare il footer */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    position: fixed;  /* Fisso in basso */
+    bottom: 0;        /* Posizionato alla base della finestra */
+    width: 100%;      /* Occupare tutta la larghezza */
+}
+
+footer p {
+    margin: 0;        /* Rimuovi margini */
+    line-height: 1.6; /* Aumenta la leggibilità tra le righe */
+}
+
+#text {
+    color: #000000;
+}

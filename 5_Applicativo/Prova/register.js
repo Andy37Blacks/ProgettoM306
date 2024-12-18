@@ -1,152 +1,111 @@
-/*
+//Configurazione di Firebase 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-https://www.youtube.com/watch?v=b1ULt_No3IY
-https://rhymbil.netlify.app/
-
-*/
-
-// Your web app's Firebase configuration
-/*
-
-https://www.youtube.com/watch?v=b1ULt_No3IY
-https://rhymbil.netlify.app/
-
-*/
-
-// Your web app's Firebase configuration
 var firebaseConfig = {
-    apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
-    authDomain: "prova-firebase-m306.firebaseapp.com",
-    databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "prova-firebase-m306",
-    storageBucket: "prova-firebase-m306.appspot.com",
-    messagingSenderId: "43569190876",
-    appId: "1:43569190876:web:43568120f0fd14e4c56119"
-  };
-  
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  // Initialize variables
-  const auth = firebase.auth();
-  const database = firebase.database();
-  
-  // Set up our register function
-  function register() {
-    // Get all our input fields
-    username = document.getElementById('username').value;
-    email = document.getElementById('email').value;
-    password = document.getElementById('password').value;
-  
-    // Validate input fields
-    if (validate_field(username) == false || validate_email(email) == false || validate_password(password) == false) {
-      alert('Email or Password is Outta Line!!');
-      return;
-    }
-  
-    // Move on with Auth
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(function () {
-        // Declare user variable
-        var user = auth.currentUser;
-  
-        // Add this user to Firebase Database
-        var database_ref = database.ref();
-  
-        // Create User data
-        var user_data = {
-          username: username,
-          email: email,
-          username: username,
-          last_login: Date.now()
-        };
-  
-        // Push to Firebase Database
-        database_ref.child('users/' + user.uid).set(user_data);
-  
-        // DOne
-        alert('User Created!!');
-      })
-      .catch(function (error) {
-        // Firebase will use this to alert of its errors
-        var error_code = error.code;
-        var error_message = error.message;
-  
-        alert(error_message);
-      })
+  apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
+  authDomain: "prova-firebase-m306.firebaseapp.com",
+  databaseURL: "https://prova-firebase-m306-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "prova-firebase-m306",
+  storageBucket: "prova-firebase-m306.appspot.com",
+  messagingSenderId: "43569190876",
+  appId: "1:43569190876:web:43568120f0fd14e4c56119"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const firestore = firebase.firestore();
+
+// Funzione di registrazione
+function register() {
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  // Validazione dei campi
+  if (!validate_field(username) || !validate_email(email) || !validate_password(password)) {
+    alert('Per favore, inserisci dati validi.');
+    return;
   }
-    function login () {
-      // Get all our input fields
-      email = document.getElementById('email').value
-      password = document.getElementById('password').value
-    
-      // Validate input fields
-      if (validate_email(email) == false || validate_password(password) == false) {
-        alert('Email or Password is Outta Line!!')
-        return
-        // Don't continue running the code
-      }
-    
-      auth.signInWithEmailAndPassword(email, password)
-      .then(function() {
-        // Declare user variable
-        var user = auth.currentUser
-    
-        // Add this user to Firebase Database
-        var database_ref = database.ref()
-    
-        // Create User data
-        var user_data = {
-          last_login : Date.now()
-        }
-    
-        // Push to Firebase Database
-        database_ref.child('users/' + user.uid).update(user_data)
-    
-        // DOne
-        alert('User Logged In!!')
-    
-      })
-      .catch(function(error) {
-        // Firebase will use this to alert of its errors
-        var error_code = error.code
-        var error_message = error.message
-    
-        alert(error_message)
-      })
-    }
-    
-    
-    
-    
-    // Validate Functions
-    function validate_email(email) {
-      expression = /^[^@]+@\w+(\.\w+)+\w$/
-      if (expression.test(email) == true) {
-        // Email is good
-        return true
+
+  auth.createUserWithEmailAndPassword(email, password) //Serve a creare un utente nel Firebase Authentication
+    .then(() => {
+      const user = auth.currentUser; 
+
+      // Imposta displayName e invia email di verifica
+      return user.updateProfile({ displayName: username })
+        .then(() => {
+          user.sendEmailVerification() //Serve a mandare tramite email la verificazione del account 
+            .then(() => {
+              alert('Email di verifica inviata. Controlla la tua casella di posta.');
+
+              // Salva i dati dell'utente in Firestore
+              const userData = {
+                username,
+                email,
+                verified: false,
+                last_login: firebase.firestore.FieldValue.serverTimestamp(), //chiesto a chatgpt per gestire  l'ultimo login 
+              };
+
+              firestore.collection('users').doc(user.uid).set(userData);
+
+              auth.signOut(); // Logout automatico dopo la registrazione
+              window.location.replace("/"); // Reindirizza alla pagina di login
+            });
+        });
+    })
+    .catch((error) => {
+      console.error('Errore nella registrazione:', error.message);
+      alert('Errore: ' + error.message);
+    });
+}
+
+/* Funzione di login
+function login() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+ 
+  if (!validate_email(email) || !validate_password(password)) {
+    alert('Email o password non validi.');
+    return;
+  }
+ 
+  auth.signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+ 
+      if (!user.emailVerified) {
+        alert('Per favore verifica la tua email prima di accedere.');
+        auth.signOut();
       } else {
-        // Email is not good
-        return false
+        // Aggiorna l'ultimo login in Firestore
+        const userRef = firestore.collection('users').doc(user.uid);
+        userRef.update({ last_login: firebase.firestore.FieldValue.serverTimestamp() });
+ 
+        window.location.replace("/"); // Reindirizza alla dashboard
       }
-    }
-    
-    function validate_password(password) {
-      // Firebase only accepts lengths greater than 6
-      if (password < 6) {
-        return false
-      } else {
-        return true
-      }
-    }
-    
-    function validate_field(field) {
-      if (field == null) {
-        return false
-      }
-    
-      if (field.length <= 0) {
-        return false
-      } else {
-        return true
-      }
-    }
+    })
+    .catch((error) => {
+      console.error('Errore nel login:', error.message);
+      alert('Errore: ' + error.message);
+    });
+}*/
+
+// Funzioni di validazione --> chiesto a chatgpt per la regular expression
+function validate_email(email) {
+  const expression = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return expression.test(email);
+}
+
+function validate_password(password) {
+  return password.length >= 6; // Lunghezza minima richiesta da Firebase
+}
+
+function validate_field(field) {
+  if (!field || field.trim().length === 0) {
+    return false;
+  } else {
+    return true;
+  }
+}

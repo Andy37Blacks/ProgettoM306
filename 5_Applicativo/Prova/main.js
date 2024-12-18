@@ -1,12 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import {
-    getDatabase,
-    set,
-    ref,
-    push,
-    onChildAdded
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getDatabase, ref, push, set, onChildAdded, orderByChild, query } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
     authDomain: "prova-firebase-m306.firebaseapp.com",
@@ -19,152 +14,89 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-auth.languageCode = 'it';
-const provider = new GoogleAuthProvider();
 const database = getDatabase(app);
 
-let myName = sessionStorage.getItem("myName"); //https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
-let profilePicture = sessionStorage.getItem("profilePicture"); //https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
+const mesi = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
 
-const mesi = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sept",
-    "Oct",
-    "Nov",
-    "Dec",
-];
+let myName = null;
+let profilePicture = null;
 
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Controlla se l'utente è autenticato
-    if (!myName) {
-        alert("Devi effettuare il login per accedere alla chat.");
-        window.location.replace("/"); 
+onAuthStateChanged(auth, (user) => {
+    if (!user || !user.emailVerified) {
+        alert("Devi effettuare il login e verificare la tua email per accedere a tutte le funzionalità della chat.");
+        myName = null;
+        profilePicture = null;
+        document.getElementById("submit").disabled = true;  // Disabilita l'invio di messaggi
     } else {
-        checkOldMessages(); 
-        setInterval(checkOldMessages, 60 * 60 * 1000); 
+        // Assegna il nome e la foto del profilo dell'utente, se non disponibili usa dei valori predefiniti
+        myName = user.displayName || "Anonimo"; 
+        profilePicture = user.photoURL || "user_default.jpg"; 
+        
+        document.getElementById("submit").disabled = false;  // Abilita l'invio dei messaggi
+
+        // Carica i messaggi e aggiorna ogni ora
         loadMessages();
+        setInterval(loadMessages, 60 * 60 * 1000);  // Ricarica i messaggi ogni ora
     }
 });
 
-var text = "";
 
+var text = "";
 
 document.getElementById('text').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
+        e.preventDefault(); //Previene il comportamento del tasto premuto sul textarea
         text = document.getElementById('text').value.trim();
         if (text) {
             document.getElementById('submit').click();
             document.getElementById('text').value = ""; 
         }
-    } else if (e.key === 'Enter' && e.shiftKey) {
-        
     }
 });
-
-
 
 let fileData = "";
+
 document.getElementById('submit').addEventListener('click', () => {
-    if (!myName) {
-        alert("Devi essere loggato per accedere alla chat.");
-        window.location.replace("/"); //https://www.w3schools.com/js/js_window_location.asp
-        return;
-    }
-    else {
-        text = document.getElementById('text').value.trim();
+    const user = auth.currentUser;
 
-        /* Preso da chatgpt per far si che quando si va a capo anche nel div dove viene inserito il testo bisogna cambirare 
-        il \n con un <br> così da poter lasciare la formattazione come inserita dall' utente nel textarea.*/
+    text = document.getElementById('text').value.trim();
+    text = text.replace(/\n/g, "<br>"); // Gestisci ritorni a capo
 
-        text = text.replace(/\n/g, "<br>");
+    const date = new Date();
+    const monthName = mesi[date.getMonth()];
+    const day = date.getDate();
+    const hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+    const minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+    const timeStamp = `${monthName} ${day} - ${hours}:${minutes}`;
+    const id = push(ref(database, 'message')).key;
+    const timeStampUnix = Date.now();  // Aggiungi il timestamp UNIX in millisecondi
 
-        console.log(text);
-        const date = new Date();
-        let monthName = mesi[date.getMonth()];
-        let day = date.getDate();
-
-        let hours = "";
-        if (date.getHours() < 10) {
-            hours = "0" + date.getHours();
-        }
-        else {
-            hours = date.getHours();
-        }
-
-        let minutes = "";
-        if (date.getMinutes() < 10) {
-            minutes = "0" + date.getMinutes();
-        }
-        else {
-            minutes = date.getMinutes();
-        }
-
-        const timeStamp = `${monthName} ${day} - ${hours}:${minutes}`;
-        const id = push(ref(database, 'message')).key;
-
-        const timeStampUnix = Date.now(); // Aggiunge il timestamp UNIX in millisecondi
-
-        if (text) {
-            set(ref(database, 'message/' + id), {
-                name: myName,
-                text: text,
-                profilePicture: profilePicture,
-                file: fileData || "",
-                time: timeStamp,
-                timeUnix: timeStampUnix // Salva il timestamp UNIX
-            }).then(() => {
-                document.getElementById('text').value = "";
-                fileData = "";
-                dropzone.removeAllFiles();
-            }).catch((error) => {
-                console.error("Errore nella scrittura nel database:", error);
-            });
-        }
-
+    if (text) {
+        set(ref(database, 'message/' + id), {
+            name: user.displayName || "Anonimo", // Usa il nome utente o un valore predefinito
+            text: text,
+            profilePicture: user.photoURL || "user_default.jpg", // Usa una foto predefinita se non disponibile quella dell' utente.
+            file: fileData || "",
+            time: timeStamp,
+            timeUnix: timeStampUnix // Salva il timestamp UNIX  --> Cercato sul web e chiesto a chatgpt per gestire l' eliminazione dei messaggi dopo 1 settimana
+        }).then(() => {
+            document.getElementById('text').value = "";
+            fileData = "";
+            dropzone.removeAllFiles();
+        }).catch((error) => {
+            console.error("Errore nella scrittura nel database:", error);
+        });
     }
 });
 
-
-
-function checkOldMessages() {
-    const messagesRef = ref(database, 'message/');
-    const oneWeekAgo = Date.now() -  7  * 24 * 60 * 60 * 1000; // 7 giorni in millisecondi
-
-    onChildAdded(messagesRef, (data) => {
-        const messageData = data.val();
-        const messageKey = data.key;
-
-        if (messageData.timeUnix < oneWeekAgo) {
-            // Elimina il messaggio dal database
-            set(ref(database, 'message/' + messageKey), null)
-                .then(() => {
-                    console.log(`Messaggio con ID ${messageKey} eliminato`);
-                    window.location.replace("/chat.html");
-                    
-                })
-                .catch((error) => {
-                    console.error(`Errore nell'eliminazione del messaggio con ID ${messageKey}:`, error);
-                });
-        }
-    });
-}
-
-
 function loadMessages() {
-    const messagesRef = ref(database, 'message/');
+    const messagesRef = query(ref(database, 'message/'), orderByChild('timeUnix'));  // Ordina i messaggi per timeUnix --> Cercato sul web e chiesto a chatgpt per gestire l' eliminazione dei messaggi dopo 1 settimana
     onChildAdded(messagesRef, (data) => {
         const messageData = data.val();
         const messageElement = document.createElement('div');
-        messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received');
+
+        //Cambia il nome della classe in base all' autore del messaggio così da potere settare il css per mettere il div del messaggio 
+        messageElement.className = 'message ' + (messageData.name === myName ? 'sent' : 'received'); 
         const timeClass = messageData.name === myName ? 'right' : 'left';
 
         messageElement.innerHTML = `
@@ -185,21 +117,20 @@ function loadMessages() {
     });
 }
 
-
-//https://docs.dropzone.dev/
+//https://www.dropzone.dev
+//https://stackoverflow.com/questions/52663757/converting-dropzone-file-object-to-base64-string
 Dropzone.autoDiscover = false;
 const dropzone = new Dropzone("#fileDropzone", {
     addRemoveLinks: true,
     dictRemoveFile: "Remove file",
     maxFiles: 1,
-    acceptedFiles: "image/*,audio/*", //Chiesto a ChatGPT per i file accettati
+    acceptedFiles: "image/*,audio/*", 
     init: function () {
         this.on("addedfile", (file) => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 if (file.status == 'uploading') {
-                    fileData = e.target.result; // Salva il contenuto Base64
-                    console.log("File caricato (Base64):", fileData);
+                    fileData = e.target.result;  // Salva il contenuto Base64
                 } else {
                     alert("Puoi inserire solo un file alla volta!!!");
                     dropzone.removeAllFiles();
@@ -210,23 +141,17 @@ const dropzone = new Dropzone("#fileDropzone", {
 
         this.on("removedfile", (file) => {
             if (file.status == 'error') {
-                fileData = ""; // Rimuove il file corrente
+                fileData = "";  // Rimuove il file corrente
             }
         });
     },
 });
-
-console.log(myName);
-console.log(profilePicture);
 
 function logout() {
     sessionStorage.removeItem("myName");
     sessionStorage.removeItem("profilePicture");
     myName = null;
     profilePicture = null;
-    console.log(myName);
-    console.log(profilePicture);
-    window.location.replace("/");
+    window.location.replace("/");  // Rimanda alla pagina di login
 }
-
 document.getElementById("logout-button").addEventListener("click", logout);

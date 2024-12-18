@@ -1,4 +1,3 @@
-/* Stile generale del corpo */
 body {
   margin: 0;
   padding: 0;
@@ -10,7 +9,6 @@ body {
   height: 100vh;
 }
 
-/* Contenitore centrale */
 .content {
   display: flex;
   justify-content: center;
@@ -19,7 +17,6 @@ body {
   width: 100%;
 }
 
-/* Contenitore login */
 .login_div {
   background: #ffffff;
   border-radius: 10px;
@@ -31,14 +28,12 @@ body {
   color: #000000;
 }
 
-/* Titolo */
 .login_div h2 {
   margin-bottom: 20px;
   font-size: 1.5em;
   color: #8c00ff;
 }
 
-/* Campi di input */
 .login_div input {
   display: block;
   width: calc(100% - 20px);
@@ -55,7 +50,6 @@ body {
   border-color: #8c00ff;
 }
 
-/* Bottone di registrazione */
 #button_container {
   margin: 20px 0;
 }
@@ -75,14 +69,7 @@ body {
   background-color: #480083;
 }
 
-/* Testo aggiuntivo */
-.login_div p {
-  margin-top: 20px;
-  color: #ff0000;
-  font-size: 0.9em;
-}
 
-/* Bottone Google */
 #google-login-button {
   background-color: #ffffff;
   color: #757575;

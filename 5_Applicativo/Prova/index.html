@@ -2,32 +2,33 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="register.css">
-  <title>Chat Negri V3</title>
-  <script src="./login.js" defer type="module"></script>
-  <!--<script src="https://apis.google.com/js/platform.js" async defer></script>-->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="register.css">
+    <title>TalkChat</title>
+    <script src="./login.js" defer type="module"></script>
 </head>
 
 <body>
-  <div class="content">
-    <div class="login_div" id="login_div">
-      <h2>Login</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="New Password">
-      <div id="button_container">
-        <button onclick="login()">Login</button>
-      </div>
-      
-      <p>Esegui il login per accedere ai contenuti della chat</p>
-      <button id="google-login-button">Accedi con Google</button>
-      <p>Non hai ancora un account!!!<a href="register.html">Registrati</a></p>
+    <div class="content">
+        <div class="login_div" id="login_div">
+            <h2>Login</h2>
+            <input type="text" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="New Password">
+            <div id="button_container">
+                <button id="login_button">Login</button>
+            </div>
+
+            <p id="text">Esegui il login per accedere ai contenuti della chat</p>
+            <p id="text">Non hai ancora un account!!! <a href="register.html">Registrati</a></p>
+            <button id="google-login-button">Accedi con Google</button>
+        </div>
     </div>
-  </div>
+    <footer>
+      <p>© 2024-2025 TalkChat | Designed by Andrea Negri | Tester: Arzani Christian, Andrea Casamatta and Marco Monteiro</p>
+    </footer>
 </body>
 
 </html>

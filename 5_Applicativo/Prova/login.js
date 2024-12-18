@@ -1,12 +1,7 @@
+//Configurazione di Firebase 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
-import {
-    getDatabase,
-    set,
-    ref,
-    push,
-    onChildAdded
-} from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCwtVPPS0Qx17_GsMed-nC6DoBdPMnc3xQ",
@@ -20,39 +15,87 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
 auth.languageCode = 'it';
 const provider = new GoogleAuthProvider();
+
 const database = getDatabase(app);
 
-const googleLogin = document.getElementById("google-login-button");
+
+const googleLoginButton = document.getElementById("google-login-button");
+const emailLoginButton = document.getElementById("login_button");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 let myName = "";
 let profilePicture = "";
 
-console.log(sessionStorage.getItem("myName"));//https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
-console.log(sessionStorage.getItem("profilePicture"));//https://www.w3schools.com/jsref/prop_win_sessionstorage.asp
-
-if(!sessionStorage.getItem("myName")){
-    googleLogin.addEventListener("click", function () {
-        signInWithPopup(auth, provider)
+// Gestione login con Google
+if (!sessionStorage.getItem("myName")) {
+    googleLoginButton.addEventListener("click", function () {
+        signInWithPopup(auth, provider) // Funzione di Firebase che permette di fare login con un account di google
             .then((result) => {
                 const user = result.user;
                 myName = user.displayName;
                 profilePicture = user.photoURL;
-    
+
                 alert("Accesso effettuato con " + user.email);
-                document.getElementById("google-login-button").disabled = true;
-                document.getElementById("login_div").style.visibility = 'hidden';
-    
+
+                // Salva i dati dell'utente nella sessione
                 sessionStorage.setItem("myName", myName);
-                sessionStorage.setItem("profilePicture" , profilePicture);
-                
-                window.location.replace("/chat.html"); //https://www.w3schools.com/js/js_window_location.asp
+                sessionStorage.setItem("profilePicture", profilePicture);
+
+                window.location.replace("/chat.html");
             })
             .catch((error) => {
                 console.error("Sign-in error:", error.code, error.message);
             });
     });
+} else {
+    window.location.replace("/chat.html");
 }
-else{
-    window.location.replace("/chat.html"); //https://www.w3schools.com/js/js_window_location.asp
+
+// Gestione login con email e password
+emailLoginButton.addEventListener("click", function () {
+    const email = emailInput.value;
+    const password = passwordInput.value;
+
+    if (!validate_email(email) || !validate_password(password)) {
+        alert("Email o password non validi!");
+        return;
+    }
+
+    signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+
+            // Controlla se l'email è verificata
+            if (!user.emailVerified) {
+                alert('Devi verificare la tua email prima di accedere.');
+                auth.signOut();
+                return;
+            }
+
+            alert("Accesso effettuato con " + user.email);
+
+            // Salva i dati dell'utente nella sessione
+            sessionStorage.setItem("myName", user.displayName);
+            sessionStorage.setItem("profilePicture", user.photoURL);
+
+            window.location.replace("/chat.html");
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            alert("Errore: " + errorMessage);
+        });
+});
+
+// Funzioni di validazione --> chiesto a chatgpt per la regular expression
+function validate_email(email) {
+    const expression = /^[^@]+@\w+(\.\w+)+\w$/;
+    return expression.test(email);
+}
+
+function validate_password(password) {
+    return password.length >= 6;// Lunghezza minima richiesta da Firebase
 }
